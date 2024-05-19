@@ -1,5 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import os
+import graph_generator
 
 def closed_neighborhood(G, u):
     return set(G.neighbors(u)).union({u})
@@ -26,44 +28,70 @@ def strong_product(G1, G2):
             R.add_edge((u2, v2), (u1, v1))
             R.add_edge((u1, v2), (u2, v1))
             R.add_edge((u2, v1), (u1, v2))
-    
+
     return R
 
 def strong_product_k_times(G, k):
     R = G
     for _ in range(k - 1):
-        print(_)
         R = strong_product(R, G)
     return R
 
-def check_k_cop_number(G, k, strong_product_func):
+def check_k_cop_number(G, k):
     """Implements the CHECK k-COP NUMBER algorithm."""
-    G_k_strong = strong_product_k_times(G, k, strong_product_func)
-    f = {u: set(G.nodes) - closed_neighborhood(G, u[0]) for u in G_k_strong.nodes}
+    G_k_strong = strong_product_k_times(G, k)
+    converted_strong_product = {node: list(neighbors) for node, neighbors in G_k_strong.adj.items()}
+    
+    total_vertices = []
+    f = {}
+
+    for u in converted_strong_product:
+        total_vertices.append(u)
+    
+    for u in converted_strong_product:
+        closed_neighbour_list = converted_strong_product[u]
+        closed_neighbour_list.append(u)
+        f[u] = list(set(total_vertices) - set(closed_neighbour_list))
     
     while True:
         f_prev = f.copy()
 
         for u, v in G_k_strong.edges:
-            f[u] = f[u].intersection(set().union(*(closed_neighborhood(G, w[0]) for w in f[v])))
-            f[v] = f[v].intersection(set().union(*(closed_neighborhood(G, w[0]) for w in f[u])))
+            closed_neighbour_list_u = converted_strong_product[u]
+            closed_neighbour_list_u.append(u)    
+
+            closed_neighbour_list_v = converted_strong_product[v]
+            closed_neighbour_list_v.append(v)    
+            f[u] = list(set(f[u]) & set(closed_neighbour_list_v))
+            f[v] = list(set(f[v]) & set(closed_neighbour_list_u))
+            
         if f == f_prev:
             break
     
-    for u in G_k_strong.nodes:
-        if not f[u]:
+    for u in converted_strong_product:
+        if f[u] == []:
             return f"c(G) ≤ {k}"
     
     return f"c(G) > {k}"
 
-adj_list_G = {
-        0: [1, 2],
-        1: [0, 2],
-        2: [0, 1]
-    }
-    
-G = nx.Graph(adj_list_G)
+n = 19
 
-k = 4
-result = check_k_cop_number(G, k)
-print(result)
+graph_list = graph_generator.generate_all_connected_graphs(n)
+print("Graphs Generated")
+print()
+count = 1
+for graph in graph_list:
+    G = nx.Graph(graph)
+    
+    k = 3
+    result = check_k_cop_number(G, k)
+    
+    output_dir = "output_graphs"
+    nx.draw(G)
+    plt.text(0.2, 0.1, result, fontsize=12, ha='center')
+    output_path = os.path.join(output_dir, f"graph {count}.png")
+    plt.savefig(output_path)
+    count += 1
+    plt.close()
+    print(f"Output {count} complete")
+    print()

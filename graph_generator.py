@@ -1,49 +1,37 @@
-from itertools import combinations
-
-def is_connected(graph, n):
-    visited = [False] * n
-    stack = [0]
-    visited[0] = True
-    count = 1
-    
-    while stack:
-        node = stack.pop()
-        for neighbor in graph[node]:
-            if not visited[neighbor]:
-                visited[neighbor] = True
-                stack.append(neighbor)
-                count += 1
-                
-    return count == n
+import networkx as nx
+import itertools
 
 def generate_all_connected_graphs(n):
-    if n <= 0:
+    if n < 1:
         return []
-    
-    vertex_pairs = list(combinations(range(n), 2))
-    
-    total_graphs = 2 ** len(vertex_pairs)
+    if n == 1:
+        return [nx.complete_graph(1)]
     
     connected_graphs = []
     
-    for i in range(total_graphs):
+    nodes = range(n)
+    all_possible_edges = list(itertools.combinations(nodes, 2))
 
-        graph = {v: [] for v in range(n)}
-        edge_count = 0
-        
-        for j, (u, v) in enumerate(vertex_pairs):
-            if (i & (1 << j)) != 0:
-                graph[u].append(v)
-                graph[v].append(u)
-                edge_count += 1
-
-        if is_connected(graph, n):
-            connected_graphs.append(graph)
+    graphcount = 1
     
-    return connected_graphs
+    for edges_combination in itertools.product([0, 1], repeat=len(all_possible_edges)):
+        edges = [all_possible_edges[i] for i in range(len(all_possible_edges)) if edges_combination[i] == 1]
+        G = nx.Graph()
+        G.add_nodes_from(nodes)
+        G.add_edges_from(edges)
+        
+        if nx.is_connected(G):
+            is_duplicate = any(nx.is_isomorphic(G, existing_graph) for existing_graph in connected_graphs)
+            if not is_duplicate:
+                connected_graphs.append(nx.Graph(G)) 
+        
+        print()
+       # print(f"Graph generation count:  {graphcount}")
+        G = nx.Graph()  
+        graphcount += 1
 
-n = 3
-connected_graphs = generate_all_connected_graphs(n)
-print(connected_graphs)
-for idx, graph in enumerate(connected_graphs):
-    print(f"Graph {idx + 1}: {graph}")
+        print(len(connected_graphs))
+        if len(connected_graphs) == 10000:
+            return connected_graphs
+
+    return connected_graphs
