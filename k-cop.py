@@ -81,17 +81,20 @@ print("Graphs Generated")
 print()
 count = 1
 for graph in graph_list:
-    G = nx.Graph(graph)
-    
+    G = nx.Graph()
+    for i in range(n):
+        for j in range(i + 1, n):
+            if graph[i][j] == 1:
+                G.add_edge(i, j)
     k = 3
     result = check_k_cop_number(G, k)
     
     output_dir = "output_graphs"
     nx.draw(G)
-    plt.text(0.2, 0.1, result, fontsize=12, ha='center')
+    plt.text(0.5, 0.02, result, fontsize=12, ha='center')
     output_path = os.path.join(output_dir, f"graph {count}.png")
     plt.savefig(output_path)
-    count += 1
     plt.close()
     print(f"Output {count} complete")
+    count += 1
     print()
