@@ -48,8 +48,15 @@ def generate_all_connected_graphs(n, limit = 1000):
 
         if is_connected(graph) and is_unique(graph, unique_graphs):
             all_graphs.append(graph)
+            print()
             print(f"Graph {generated_counter + 1} generated")
+            print()
             generated_counter += 1
+        
+        if len(all_graphs) >= limit:
+                end_time = time.time()
+                print(f"Reached {limit} connected graphs in {end_time - start_time} seconds.")
+                return all_graphs
 
         total_counter += 1
         

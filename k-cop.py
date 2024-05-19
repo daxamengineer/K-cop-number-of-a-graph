@@ -74,7 +74,7 @@ def check_k_cop_number(G, k):
     
     return f"c(G) > {k}"
 
-n = 19
+n = 4
 
 graph_list = graph_generator.generate_all_connected_graphs(n)
 print("Graphs Generated")
@@ -86,8 +86,9 @@ for graph in graph_list:
         for j in range(i + 1, n):
             if graph[i][j] == 1:
                 G.add_edge(i, j)
-    k = 3
+    k = 1
     result = check_k_cop_number(G, k)
+
     
     output_dir = "output_graphs"
     nx.draw(G)
@@ -98,3 +99,6 @@ for graph in graph_list:
     print(f"Output {count} complete")
     count += 1
     print()
+
+    # if result == f"c(G) > {k}":
+    #     break
